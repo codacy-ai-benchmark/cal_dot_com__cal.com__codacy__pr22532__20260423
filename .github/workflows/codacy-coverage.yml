@@ -17,8 +17,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile --prefer-offline || yarn install
-        continue-on-error: false
+        run: yarn install
 
       - name: Run tests with coverage
         run: yarn test --coverage --coverageReporters=lcov --passWithNoTests
