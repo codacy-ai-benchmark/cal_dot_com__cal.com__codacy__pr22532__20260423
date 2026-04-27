@@ -16,16 +16,25 @@ jobs:
         with:
           node-version: 20
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Install dependencies
-        run: yarn install
+        run: YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
 
       - name: Run tests with coverage
         run: yarn test --coverage --coverageReporters=lcov --passWithNoTests
         continue-on-error: true
 
+      - name: Collect LCOV reports
+        id: lcov
+        run: |
+          reports=$(find . -path '*/coverage/lcov.info' -type f | paste -sd, -)
+          echo "reports=$reports" >> "$GITHUB_OUTPUT"
+
       - name: Upload coverage to Codacy
         uses: codacy/codacy-coverage-reporter-action@v1
-        if: always()
+        if: ${{ steps.lcov.outputs.reports != '' }}
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports: "**/lcov.info"
+          coverage-reports: ${{ steps.lcov.outputs.reports }}
